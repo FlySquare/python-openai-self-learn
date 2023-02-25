@@ -6,20 +6,9 @@ from collections import deque
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 import os
-import pandas as pd
-import tiktoken
 import openai
-from openai.embeddings_utils import distances_from_embeddings
-import numpy as np
-from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
-from flask import Flask, request
-from flask_restful import Api, Resource
-import datetime
-import time, datetime
-import json
-from flask_cors import CORS, cross_origin
 
-openai.api_key = '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'
+openai.api_key = ''
 HTTP_URL_PATTERN = r'^http[s]*://.+'
 domain = "osmanlidogaltas.com"
 full_url = "https://osmanlidogaltas.com/"
