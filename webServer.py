@@ -3,11 +3,12 @@ import pandas as pd
 import tiktoken
 import openai
 import numpy as np
-from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
+from openai.embeddings_utils import distances_from_embeddings
 from flask import Flask, request
 from flask_restful import Api, Resource
 import time, datetime
 from flask_cors import CORS
+import json
 
 openai.api_key = ''
 HTTP_URL_PATTERN = r'^http[s]*://.+'
@@ -117,6 +118,9 @@ def answer_question(
         stop_sequence=None
 ):
     start = time.time()
+    jsonAnswer = getAnswerFromJson(question)
+    if jsonAnswer is not None:
+        return [jsonAnswer, time.time() - start]
     context = create_context(
         question,
         df,
@@ -139,6 +143,9 @@ def answer_question(
             model=model,
         )
         roundtrip = time.time() - start
+        if response["choices"][0]["text"] != "undefined":
+            saveToJson(question, response["choices"][0]["text"].strip())
+
         return [response["choices"][0]["text"].strip(), roundtrip]
     except Exception as e:
         print(e)
@@ -148,6 +155,37 @@ def answer_question(
 app = Flask(__name__)
 CORS(app, support_credentials=True)
 api = Api(app)
+
+def getAnswerFromJson(question):
+    jsonFile = 'fastResponses/oldResponses.json'
+    if os.path.exists(jsonFile):
+        with open(jsonFile, 'r') as f:
+            data = json.load(f)
+    else:
+        return None
+
+    for item in data['questions']:
+        if item['question'].lower() == question.lower():
+            return item['answer']
+
+    return None
+
+def saveToJson(question, answer):
+    jsonFile = 'fastResponses/oldResponses.json'
+
+    if os.path.exists(jsonFile):
+        with open(jsonFile, 'r') as f:
+            data = json.load(f)
+    else:
+        data = {"questions": []}
+
+    data['questions'].append({
+        'question': question,
+        'answer': answer,
+    })
+
+    with open(jsonFile, 'w') as f:
+        json.dump(data, f)
 
 
 class AIController(Resource):
