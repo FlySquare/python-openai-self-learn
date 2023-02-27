@@ -9,13 +9,15 @@ from flask_restful import Api, Resource
 import time, datetime
 from flask_cors import CORS
 import json
+import locale
+import re
 
 openai.api_key = ''
 HTTP_URL_PATTERN = r'^http[s]*://.+'
 PORT = 5053
 domain = "osmanlidogaltas.com"
 full_url = "https://osmanlidogaltas.com/"
-
+locale.setlocale(locale.LC_ALL, 'tr_TR.UTF-8')
 
 def remove_newlines(line):
     line = line.str.replace('\n', ' ')
@@ -23,6 +25,15 @@ def remove_newlines(line):
     line = line.str.replace('  ', ' ')
     return line
 
+def tr_lower(self):
+    self = re.sub(r"İ", "i", self)
+    self = re.sub(r"I", "ı", self)
+    self = re.sub(r"Ç", "ç", self)
+    self = re.sub(r"Ş", "ş", self)
+    self = re.sub(r"Ü", "ü", self)
+    self = re.sub(r"Ğ", "ğ", self)
+    self = self.lower()
+    return self
 
 texts = []
 for file in os.listdir("text/" + domain + "/"):
@@ -143,7 +154,7 @@ def answer_question(
             model=model,
         )
         roundtrip = time.time() - start
-        if response["choices"][0]["text"] != "undefined":
+        if response["choices"][0]["text"].strip() != "undefined":
             saveToJson(question, response["choices"][0]["text"].strip())
 
         return [response["choices"][0]["text"].strip(), roundtrip]
@@ -155,6 +166,7 @@ def answer_question(
 app = Flask(__name__)
 CORS(app, support_credentials=True)
 api = Api(app)
+wsgi_app = app.wsgi_app
 
 def getAnswerFromJson(question):
     jsonFile = 'fastResponses/oldResponses.json'
@@ -165,7 +177,7 @@ def getAnswerFromJson(question):
         return None
 
     for item in data['questions']:
-        if item['question'].lower() == question.lower():
+        if tr_lower(item['question']) == tr_lower(question):
             return item['answer']
 
     return None

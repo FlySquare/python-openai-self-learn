@@ -1,5 +1,7 @@
 .idea/*
 .idea
+.idea/*
 venv
 text/*
 processed/*.csv
+fastResponses/*
