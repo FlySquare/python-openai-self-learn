@@ -17,7 +17,6 @@ HTTP_URL_PATTERN = r'^http[s]*://.+'
 PORT = 5053
 domain = "osmanlidogaltas.com"
 full_url = "https://osmanlidogaltas.com/"
-locale.setlocale(locale.LC_ALL, 'tr_TR.UTF-8')
 
 def remove_newlines(line):
     line = line.str.replace('\n', ' ')
